@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Logo hecho solo con polígonos (únicamente líneas rectas: M, L y Z).
+  Un hexágono dividido en 6 triángulos de colores y, encima, una "A" de Alejandro.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+
+    <!-- Hexágono: 6 triángulos que comparten el centro (48,48) -->
+    <path android:fillColor="#34D399" android:pathData="M48,48 L10,26 L48,4 Z" />
+    <path android:fillColor="#10B981" android:pathData="M48,48 L48,4 L86,26 Z" />
+    <path android:fillColor="#047857" android:pathData="M48,48 L86,26 L86,70 Z" />
+    <path android:fillColor="#EA580C" android:pathData="M48,48 L86,70 L48,92 Z" />
+    <path android:fillColor="#F59E0B" android:pathData="M48,48 L48,92 L10,70 Z" />
+    <path android:fillColor="#059669" android:pathData="M48,48 L10,70 L10,26 Z" />
+
+    <!-- Letra "A": polígono exterior + triángulo interior que hace de hueco (evenOdd) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M48,20 L70,74 L58,74 L53.5,62 L42.5,62 L38,74 L26,74 Z M48,36 L51.5,53 L44.5,53 Z" />
+</vector>
