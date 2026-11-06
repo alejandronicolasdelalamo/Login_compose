@@ -4,6 +4,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.ui.unit.IntOffset
+import com.Nicolas.login_compose.ui.FondoPantalla
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -54,23 +64,43 @@ private fun App() {
     // el espacio que ocupan las barras del sistema, para no taparnos con ellas.
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
-        val nombre = nombreUsuario
 
-        if (nombre == null) {
-            // onLoginCorrecto se ejecuta cuando el login acierta; "it" es el nombre recibido.
-            LoginScreen(
-                onLoginCorrecto = { nombreUsuario = it },
-                modifier = modifier,
-            )
-        } else {
-            // Pasamos el nombre como parámetro a la segunda pantalla.
-            // onCerrarSesion se ejecuta al pulsar el botón: borramos el nombre y
-            // el "if" de arriba vuelve a mostrar el login.
-            WelcomeScreen(
-                nombre = nombre,
-                onCerrarSesion = { nombreUsuario = null },
-                modifier = modifier,
-            )
+        // ANIMACIÓN: AnimatedContent vigila el estado (nombreUsuario). Cuando cambia,
+        // la pantalla vieja se desvanece rápido (300 ms) y, justo después, la nueva entra
+        // (700 ms) con tres efectos a la vez: fundido, desplazamiento lateral y zoom.
+        // El fondo (foto) NO se anima: está fuera, así que el cambio se nota en la tarjeta.
+        FondoPantalla {
+            AnimatedContent(
+                targetState = nombreUsuario,
+                transitionSpec = {
+                    // Al iniciar sesión entra desde la derecha; al cerrarla, desde la izquierda.
+                    val sentido = if (targetState != null) 1 else -1
+                    val entrada = tween<Float>(700, delayMillis = 250, easing = FastOutSlowInEasing)
+                    val entradaDesplazamiento = tween<IntOffset>(700, delayMillis = 250, easing = FastOutSlowInEasing)
+                    (fadeIn(entrada) +
+                        slideInHorizontally(entradaDesplazamiento) { it / 3 * sentido } +
+                        scaleIn(entrada, initialScale = 0.85f))
+                        .togetherWith(fadeOut(tween(300)))
+                },
+                label = "transicionPantallas",
+            ) { nombre ->
+                if (nombre == null) {
+                    // onLoginCorrecto se ejecuta cuando el login acierta; "it" es el nombre recibido.
+                    LoginScreen(
+                        onLoginCorrecto = { nombreUsuario = it },
+                        modifier = modifier,
+                    )
+                } else {
+                    // Pasamos el nombre como parámetro a la segunda pantalla.
+                    // onCerrarSesion se ejecuta al pulsar el botón: borramos el nombre y
+                    // AnimatedContent vuelve a mostrar el login.
+                    WelcomeScreen(
+                        nombre = nombre,
+                        onCerrarSesion = { nombreUsuario = null },
+                        modifier = modifier,
+                    )
+                }
+            }
         }
     }
 }

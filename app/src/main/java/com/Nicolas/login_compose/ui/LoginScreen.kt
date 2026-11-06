@@ -76,40 +76,38 @@ fun LoginScreen(
     onLoginCorrecto: (nombre: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FondoPantalla {
-        // BoxWithConstraints nos dice cuánto espacio hay para elegir el diseño.
-        BoxWithConstraints(modifier = modifier.fillMaxSize().imePadding()) {
-            val alto = maxHeight
+    // BoxWithConstraints nos dice cuánto espacio hay para elegir el diseño.
+    BoxWithConstraints(modifier = modifier.fillMaxSize().imePadding()) {
+        val alto = maxHeight
 
-            if (maxWidth > 900.dp) {
-                // Tablet: texto a la izquierda y tarjeta a la derecha
-                Row(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .heightIn(min = alto)
-                        .padding(horizontal = 80.dp, vertical = 48.dp),
-                    horizontalArrangement = Arrangement.spacedBy(64.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Intro(
-                        estiloTitulo = MaterialTheme.typography.displayLarge,
-                        modifier = Modifier.weight(1f),
-                    )
-                    TarjetaLogin(onLoginCorrecto = onLoginCorrecto, modifier = Modifier.width(440.dp))
-                }
-            } else {
-                // Móvil: texto arriba y tarjeta debajo
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .heightIn(min = alto)
-                        .padding(horizontal = 16.dp, vertical = 32.dp),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Intro(estiloTitulo = MaterialTheme.typography.headlineLarge)
-                    Spacer(Modifier.height(24.dp))
-                    TarjetaLogin(onLoginCorrecto = onLoginCorrecto, modifier = Modifier.fillMaxWidth())
-                }
+        if (maxWidth > 900.dp) {
+            // Tablet: texto a la izquierda y tarjeta a la derecha
+            Row(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = alto)
+                    .padding(horizontal = 80.dp, vertical = 48.dp),
+                horizontalArrangement = Arrangement.spacedBy(64.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Intro(
+                    estiloTitulo = MaterialTheme.typography.displayLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                TarjetaLogin(onLoginCorrecto = onLoginCorrecto, modifier = Modifier.width(440.dp))
+            }
+        } else {
+            // Móvil: texto arriba y tarjeta debajo
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = alto)
+                    .padding(horizontal = 16.dp, vertical = 32.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Intro(estiloTitulo = MaterialTheme.typography.headlineLarge)
+                Spacer(Modifier.height(24.dp))
+                TarjetaLogin(onLoginCorrecto = onLoginCorrecto, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -337,6 +335,7 @@ fun FondoPantalla(contenido: @Composable BoxScope.() -> Unit) {
 @Composable
 private fun LoginScreenPreview() {
     Login_composeTheme {
-        LoginScreen(onLoginCorrecto = {})
+        // El fondo ya no está dentro de la pantalla (lo pone MainActivity), así que lo añadimos aquí.
+        FondoPantalla { LoginScreen(onLoginCorrecto = {}) }
     }
 }
