@@ -66,8 +66,8 @@ private fun App() {
         val modifier = Modifier.padding(innerPadding)
 
         // ANIMACIÓN: AnimatedContent vigila el estado (nombreUsuario). Cuando cambia,
-        // la pantalla vieja se desvanece rápido (300 ms) y, justo después, la nueva entra
-        // (700 ms) con tres efectos a la vez: fundido, desplazamiento lateral y zoom.
+        // la pantalla vieja se desvanece rápido y, justo después, la nueva entra
+        // con tres efectos a la vez: fundido, desplazamiento lateral y zoom.
         // El fondo (foto) NO se anima: está fuera, así que el cambio se nota en la tarjeta.
         FondoPantalla {
             AnimatedContent(

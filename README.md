@@ -15,7 +15,7 @@ App Android de ejemplo con **Jetpack Compose** y **Material 3**: una pantalla de
 
 ## Extras implementados
 
-- **Animación al iniciar sesión:** `AnimatedContent` en `MainActivity.kt`: el login se desvanece (300 ms) y la bienvenida entra con fundido, deslizamiento lateral y zoom (700 ms); al cerrar sesión entra el login desde el otro lado. El fondo con foto queda fijo para que se note el cambio. Además, los fuegos artificiales crecen desde el centro (1,4 s) con un `Animatable`.
+- **Animación al iniciar sesión:** `AnimatedContent` en `MainActivity.kt`: el login se desvanece y la bienvenida entra con fundido, deslizamiento lateral y zoom; al cerrar sesión entra el login desde el otro lado. El fondo con foto queda fijo para que se note el cambio. Además, los fuegos artificiales crecen desde el centro con un `Animatable`.
 - Modo claro y oscuro.
 - Adaptación a móvil y tablet (`BoxWithConstraints`).
 - Componentes reutilizables: `LogoCircular`, `CampoTexto`, `FondoPantalla`.

@@ -118,7 +118,7 @@ private fun Fireworks(modifier: Modifier = Modifier) {
     val ambar = MaterialTheme.colorScheme.secondary
     val naranja = MaterialTheme.colorScheme.tertiary
 
-    // ANIMACIÓN: "progreso" va de 0 a 1 en 1,4 s al aparecer la pantalla. Como es un
+    // ANIMACIÓN: "progreso" va de 0 a 1 al aparecer la pantalla. Como es un
     // estado, Compose redibuja el Canvas en cada fotograma y el dibujo "crece".
     // En la vista previa de Android Studio no hay animación: mostramos el dibujo ya completo.
     val enPreview = LocalInspectionMode.current
