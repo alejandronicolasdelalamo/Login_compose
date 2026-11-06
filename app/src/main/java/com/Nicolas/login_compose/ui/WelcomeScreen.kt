@@ -108,7 +108,7 @@ fun WelcomeScreen(
  *
  * Canvas es un "lienzo": dentro de él dibujamos con funciones como
  * drawLine, drawCircle o drawPath. Las coordenadas están pensadas para
- * un lienzo de 312 x 400 (las medidas del diseño en Figma) y se escalan
+ * un lienzo de 312 x 400 (las medidas del diseño original) y se escalan
  * con "u" para que el dibujo quepa en el espacio disponible de cualquier pantalla.
  */
 @Composable
