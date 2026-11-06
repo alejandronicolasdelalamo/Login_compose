@@ -1,5 +1,6 @@
 package com.Nicolas.login_compose.ui
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -31,7 +32,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -53,12 +56,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.Nicolas.login_compose.R
 import com.Nicolas.login_compose.ui.theme.Login_composeTheme
+import kotlinx.coroutines.delay
 
 // ---------- DATOS DE PRUEBA (hardcodeados) ----------
 // En una app real estos datos vendrían de un servidor o de una base de datos.
 private const val CORREO_CORRECTO = "alejandro@gmail.com"
 private const val CLAVE_CORRECTA = "1234"
 private const val NOMBRE_USUARIO = "Alejandro"
+
+// ---------- REGLAS DE SEGURIDAD (extra de validación) ----------
+private const val MAX_INTENTOS = 3          // fallos permitidos antes de bloquear el botón
+private const val SEGUNDOS_BLOQUEO = 10     // lo que dura el bloqueo temporal
 
 /*
  * PANTALLA 1: LOGIN
@@ -153,6 +161,19 @@ private fun TarjetaLogin(
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var hayError by rememberSaveable { mutableStateOf(false) }   // ¿mostramos el aviso de error?
+    var correoInvalido by rememberSaveable { mutableStateOf(false) }   // ¿el correo no tiene formato de correo?
+    var intentosFallidos by rememberSaveable { mutableIntStateOf(0) }  // contador de intentos
+    var segundosBloqueo by rememberSaveable { mutableIntStateOf(0) }   // > 0 significa "bloqueado"
+
+    // CUENTA ATRÁS del bloqueo: LaunchedEffect lanza una corrutina que, mientras queden
+    // segundos, espera 1 s y resta 1. Al cambiar la clave (bloqueado sí/no) se reinicia.
+    LaunchedEffect(segundosBloqueo > 0) {
+        while (segundosBloqueo > 0) {
+            delay(1000)
+            segundosBloqueo--
+        }
+    }
+    val bloqueado = segundosBloqueo > 0
 
     val focusManager = LocalFocusManager.current
     val forma = RoundedCornerShape(28.dp)
@@ -187,9 +208,12 @@ private fun TarjetaLogin(
             valor = email,
             alCambiar = {
                 email = it           // guardamos lo escrito en el estado
-                hayError = false     // y quitamos el error mientras el usuario corrige
+                hayError = false     // y quitamos los errores mientras el usuario corrige
+                correoInvalido = false
             },
-            hayError = hayError,
+            hayError = hayError || correoInvalido,
+            // Texto de ayuda bajo el campo: solo si el formato del correo es incorrecto.
+            textoAyuda = if (correoInvalido) "Escribe un correo válido, por ejemplo nombre@dominio.com" else null,
             teclado = KeyboardType.Email,
             accionTeclado = ImeAction.Next,   // la tecla del teclado salta al campo siguiente
         )
@@ -225,7 +249,12 @@ private fun TarjetaLogin(
         if (hayError) {
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Correo o contraseña incorrectos",
+                // Si está bloqueado avisamos de la espera; si no, de los intentos que quedan.
+                text = if (bloqueado) {
+                    "Demasiados intentos. Espera $segundosBloqueo s para volver a probar."
+                } else {
+                    "Correo o contraseña incorrectos. Intentos restantes: ${MAX_INTENTOS - intentosFallidos}"
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier
@@ -241,18 +270,27 @@ private fun TarjetaLogin(
         Button(
             onClick = {
                 focusManager.clearFocus()   // cierra el teclado para que no tape el mensaje de error
-                // Comparamos lo escrito con los datos de prueba.
-                // trim() quita espacios sobrantes al principio y al final del correo.
-                if (email.trim() == CORREO_CORRECTO && password == CLAVE_CORRECTA) {
+                // 1) Validación de formato: si no parece un correo, avisamos y no gastamos intento.
+                if (!Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
+                    correoInvalido = true
+                // 2) Comparamos con los datos de prueba (trim() quita espacios sobrantes del correo).
+                } else if (email.trim() == CORREO_CORRECTO && password == CLAVE_CORRECTA) {
                     onLoginCorrecto(NOMBRE_USUARIO)   // ¡acertó! Avisamos y enviamos el nombre
                 } else {
-                    hayError = true                   // falló: mostramos el error
+                    // 3) Falló: contamos el intento y, si se acaban, bloqueamos unos segundos.
+                    hayError = true
+                    intentosFallidos++
+                    if (intentosFallidos >= MAX_INTENTOS) {
+                        segundosBloqueo = SEGUNDOS_BLOQUEO
+                        intentosFallidos = 0
+                    }
                 }
             },
+            enabled = !bloqueado,   // mientras dura el bloqueo el botón no se puede pulsar
             modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
             shape = RoundedCornerShape(14.dp),
         ) {
-            Text("Iniciar sesión")
+            Text(if (bloqueado) "Espera $segundosBloqueo s" else "Iniciar sesión")
         }
     }
 }
@@ -266,6 +304,7 @@ private fun CampoTexto(
     hayError: Boolean,
     teclado: KeyboardType,
     accionTeclado: ImeAction,
+    textoAyuda: String? = null,
     transformacion: VisualTransformation = VisualTransformation.None,
     iconoFinal: @Composable (() -> Unit)? = null,
 ) {
@@ -285,6 +324,7 @@ private fun CampoTexto(
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         isError = hayError,
+        supportingText = textoAyuda?.let { { Text(it) } },   // texto pequeño bajo el campo
         visualTransformation = transformacion,
         trailingIcon = iconoFinal,
         keyboardOptions = KeyboardOptions(keyboardType = teclado, imeAction = accionTeclado),
